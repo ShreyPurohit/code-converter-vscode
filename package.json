@@ -1,7 +1,7 @@
 {
   "name": "code-converter",
   "displayName": "Ternary ⇄ If-Else Converter",
-  "description": "Instantly visualize, transform and optimize JavaScript/TypeScript conditional expressions between ternary and if-else formats.",
+  "description": "Visualize and optimize conditional expressions with ease.",
   "version": "0.0.1",
   "icon": "/assets/icon.png",
   "publisher": "iamshreydxv",
