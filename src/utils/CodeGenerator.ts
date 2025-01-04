@@ -1,5 +1,5 @@
 import generate from '@babel/generator';
-import { Node } from '@babel/types';
+import type { Node } from '@babel/types';
 
 export class CodeGenerator {
     static generate(node: Node): string {

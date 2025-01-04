@@ -1,5 +1,6 @@
-import { IfStatement, Node } from '@babel/types';
+import type { IfStatement, Node } from '@babel/types';
 import { BaseConverter } from './BaseConverter';
+
 export class IfElseToTernaryConverter extends BaseConverter {
     convert(node: IfStatement): string {
         return this.buildTernary(node);

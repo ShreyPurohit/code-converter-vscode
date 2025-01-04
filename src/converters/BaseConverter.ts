@@ -1,4 +1,4 @@
-import { Node } from '@babel/types';
+import type { Node } from '@babel/types';
 import { CodeGenerator } from '../utils/CodeGenerator';
 
 export abstract class BaseConverter {

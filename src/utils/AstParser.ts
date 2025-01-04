@@ -1,6 +1,6 @@
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
-import { ConditionalExpression, IfStatement, Node } from '@babel/types';
+import type { ConditionalExpression, IfStatement, Node } from '@babel/types';
 import * as vscode from 'vscode';
 
 export class ASTParser {

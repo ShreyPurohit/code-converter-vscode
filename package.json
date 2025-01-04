@@ -21,7 +21,7 @@
     }
   ],
   "galleryBanner": {
-    "color": "#C80000",
+    "color": "#8FDAFA",
     "theme": "dark"
   },
   "qna": "https://github.com/ShreyPurohit/code-converter-vscode/discussions",
@@ -89,9 +89,13 @@
     "lint": "eslint src",
     "test": "vscode-test"
   },
+  "dependencies": {
+    "@babel/parser": "^7.x.x",
+    "@babel/traverse": "^7.x.x",
+    "@babel/generator": "^7.x.x",
+    "@babel/types": "^7.x.x"
+  },
   "devDependencies": {
-    "@babel/parser": "^7.26.3",
-    "@babel/traverse": "^7.26.4",
     "@types/babel__generator": "^7.6.8",
     "@types/babel__traverse": "^7.20.6",
     "@types/node": "20.x",
