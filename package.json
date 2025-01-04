@@ -21,8 +21,8 @@
     }
   ],
   "galleryBanner": {
-    "color": "#8FDAFA",
-    "theme": "dark"
+    "color": "#28B463",
+    "theme": "light"
   },
   "qna": "https://github.com/ShreyPurohit/code-converter-vscode/discussions",
   "activationEvents": [
