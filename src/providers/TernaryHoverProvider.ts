@@ -5,8 +5,8 @@ import { BaseHoverProvider } from './BaseHoverProvider';
 export class TernaryHoverProvider extends BaseHoverProvider {
     private converter: TernaryToIfElseConverter;
 
-    constructor() {
-        super();
+    constructor(context: vscode.ExtensionContext) {
+        super(context);
         this.converter = new TernaryToIfElseConverter();
     }
 
@@ -14,15 +14,27 @@ export class TernaryHoverProvider extends BaseHoverProvider {
         document: vscode.TextDocument,
         position: vscode.Position
     ): Promise<vscode.Hover | null> {
+        if (!this.isConverterEnabled()) {
+            const range = document.getWordRangeAtPosition(position);
+            if (!range) return null;
+
+            const ternaryNode = await this.astParser.findTernaryAtPosition(
+                document.getText(),
+                position
+            );
+
+            return ternaryNode ? this.createHoverContent('', '', '') : null;
+        }
+
         const range = document.getWordRangeAtPosition(position);
-        if (!range) { return null; }
+        if (!range) return null;
 
         const ternaryNode = await this.astParser.findTernaryAtPosition(
             document.getText(),
             position
         );
 
-        if (!ternaryNode) { return null; }
+        if (!ternaryNode) return null;
 
         const ifElseRepresentation = this.converter.convert(ternaryNode);
         return this.createHoverContent(
@@ -32,8 +44,3 @@ export class TernaryHoverProvider extends BaseHoverProvider {
         );
     }
 }
-
-/*
- * Copyright (c) 2025 Shrey Purohit.
- * This code is licensed under the MIT License.
- */

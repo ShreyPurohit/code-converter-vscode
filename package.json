@@ -35,12 +35,16 @@
   "contributes": {
     "commands": [
       {
+        "command": "ternary-visualizer.toggleConverter",
+        "title": "Toggle Ternary/If-Else Converter"
+      },
+      {
         "command": "ternary-visualizer.copyIfElse",
-        "title": "Copy If-Else Code"
+        "title": "Copy as If-Else"
       },
       {
         "command": "ternary-visualizer.copyTernary",
-        "title": "Copy Ternary Code"
+        "title": "Copy as Ternary"
       }
     ]
   },
