@@ -12,15 +12,12 @@ export class IfElseToTernaryConverter extends BaseConverter {
         return `${condition} ? ${consequent} : ${alternate}`;
     }
     private extractValue(node: Node): string {
-        // If it's another if statement, recursively convert it
         if (node.type === 'IfStatement') {
             return this.buildTernary(node);
         }
-        // Handle block statements by extracting their content
         if (node.type === 'BlockStatement' && node.body.length === 1) {
             return this.extractValue(node.body[0]);
         }
-        // For expression statements, extract the expression
         if (node.type === 'ExpressionStatement') {
             return this.generateCode(node.expression);
         }

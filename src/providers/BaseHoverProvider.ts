@@ -38,3 +38,8 @@ export abstract class BaseHoverProvider implements vscode.HoverProvider {
         return new vscode.Hover([codeBlock, actionButtons]);
     }
 }
+
+/*
+ * Copyright (c) 2025 Shrey Purohit.
+ * This code is licensed under the MIT License.
+ */

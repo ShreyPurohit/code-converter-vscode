@@ -1,66 +1,57 @@
 import * as vscode from 'vscode';
-import { TernaryHoverProvider } from './providers/TernaryHoverProvider';
 import { IfElseHoverProvider } from './providers/IfElseHoverProvider';
+import { TernaryHoverProvider } from './providers/TernaryHoverProvider';
 
-let statusBarItem: vscode.StatusBarItem;
+const SUPPORTED_LANGUAGES = ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'];
+const CONVERTER_STATE_KEY = 'ternaryConverterEnabled';
 
 export function activate(context: vscode.ExtensionContext) {
-  const supportedLanguages = ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'];
-
-  const isEnabled = context.globalState.get<boolean>('ternaryConverterEnabled', false);
-
-  statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-  updateStatusBar(isEnabled);
+  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   statusBarItem.command = 'ternary-visualizer.toggleConverter';
+
+  const updateStatusBar = (isEnabled: boolean) => {
+    statusBarItem.text = isEnabled ? 'Disable Converter' : 'Enable Converter';
+  };
+
+  const refreshHover = async () => {
+    await vscode.workspace.getConfiguration().update('editor.hover.enabled', false, true);
+    await vscode.workspace.getConfiguration().update('editor.hover.enabled', true, true);
+  };
+
+  const copyToClipboard = (code: string) => {
+    vscode.env.clipboard.writeText(code);
+    vscode.window.showInformationMessage('Copied to Clipboard!');
+  };
+
+  updateStatusBar(context.globalState.get(CONVERTER_STATE_KEY, false));
   statusBarItem.show();
 
-  const toggleCommand = vscode.commands.registerCommand('ternary-visualizer.toggleConverter', async () => {
-    const currentState = context.globalState.get<boolean>('ternaryConverterEnabled', false);
-    await context.globalState.update('ternaryConverterEnabled', !currentState);
-    updateStatusBar(!currentState);
-
-    vscode.commands.executeCommand('editor.action.hideHover');
-  });
-
-  const ternaryHoverProvider = new TernaryHoverProvider(context);
-  const ifElseHoverProvider = new IfElseHoverProvider(context);
-
-  const copyIfElseCommand = vscode.commands.registerCommand('ternary-visualizer.copyIfElse', (code: string) => {
-    vscode.env.clipboard.writeText(code);
-    vscode.window.showInformationMessage('Copied to Clipboard!');
-    vscode.commands.executeCommand('editor.action.hideHover');
-  });
-
-  const copyTernaryCommand = vscode.commands.registerCommand('ternary-visualizer.copyTernary', (code: string) => {
-    vscode.env.clipboard.writeText(code);
-    vscode.window.showInformationMessage('Copied to Clipboard!');
-    vscode.commands.executeCommand('editor.action.hideHover');
-  });
+  const providers = [
+    new TernaryHoverProvider(context),
+    new IfElseHoverProvider(context)
+  ];
 
   context.subscriptions.push(
     statusBarItem,
-    toggleCommand,
-    copyIfElseCommand,
-    copyTernaryCommand
-  );
-
-  supportedLanguages.forEach(language => {
-    context.subscriptions.push(
-      vscode.languages.registerHoverProvider(
-        { scheme: 'file', language },
-        ternaryHoverProvider
-      ),
-      vscode.languages.registerHoverProvider(
-        { scheme: 'file', language },
-        ifElseHoverProvider
+    vscode.commands.registerCommand('ternary-visualizer.toggleConverter', async () => {
+      const currentState = context.globalState.get(CONVERTER_STATE_KEY, false);
+      await context.globalState.update(CONVERTER_STATE_KEY, !currentState);
+      updateStatusBar(!currentState);
+      await refreshHover();
+    }),
+    vscode.commands.registerCommand('ternary-visualizer.copyIfElse', copyToClipboard),
+    vscode.commands.registerCommand('ternary-visualizer.copyTernary', copyToClipboard),
+    ...SUPPORTED_LANGUAGES.flatMap(language =>
+      providers.map(provider =>
+        vscode.languages.registerHoverProvider({ scheme: 'file', language }, provider)
       )
-    );
-  });
-}
-
-function updateStatusBar(isEnabled: boolean): void {
-  statusBarItem.text = isEnabled ? '$(eye) Disable Converter' : '$(eye-closed) Enable Converter';
-  statusBarItem.tooltip = isEnabled ? 'Click to disable ternary/if-else converter' : 'Click to enable ternary/if-else converter';
+    )
+  );
 }
 
 export function deactivate() { }
+
+/*
+ * Copyright (c) 2025 Shrey Purohit.
+ * This code is licensed under the MIT License.
+ */

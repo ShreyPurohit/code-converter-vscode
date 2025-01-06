@@ -16,7 +16,7 @@ export class IfElseHoverProvider extends BaseHoverProvider {
     ): Promise<vscode.Hover | null> {
         if (!this.isConverterEnabled()) {
             const range = document.getWordRangeAtPosition(position);
-            if (!range) return null;
+            if (!range) { return null; }
 
             const ifNode = await this.astParser.findIfStatementAtPosition(
                 document.getText(),
@@ -27,14 +27,14 @@ export class IfElseHoverProvider extends BaseHoverProvider {
         }
 
         const range = document.getWordRangeAtPosition(position);
-        if (!range) return null;
+        if (!range) { return null; }
 
         const ifNode = await this.astParser.findIfStatementAtPosition(
             document.getText(),
             position
         );
 
-        if (!ifNode) return null;
+        if (!ifNode) { return null; }
 
         const ternaryRepresentation = this.converter.convert(ifNode);
         return this.createHoverContent(
@@ -44,3 +44,8 @@ export class IfElseHoverProvider extends BaseHoverProvider {
         );
     }
 }
+
+/*
+ * Copyright (c) 2025 Shrey Purohit.
+ * This code is licensed under the MIT License.
+ */
