@@ -11,15 +11,20 @@ export class ASTParser {
         });
     }
 
-    private isNodeInPosition(node: Node, position: vscode.Position): boolean {
+    private isPositionWithinNode(node: Node, position: vscode.Position): boolean {
         const nodeStart = node.loc?.start;
         const nodeEnd = node.loc?.end;
 
-        if (nodeStart && nodeEnd) {
-            return position.line >= nodeStart.line - 1 &&
-                position.line <= nodeEnd.line - 1;
-        }
-        return false;
+        if (!nodeStart || !nodeEnd) { return false; }
+
+        const posLine = position.line + 1;
+        const posChar = position.character;
+
+        if (posLine < nodeStart.line || posLine > nodeEnd.line) { return false; }
+        if (posLine === nodeStart.line && posChar < nodeStart.column) { return false; }
+        if (posLine === nodeEnd.line && posChar > nodeEnd.column) { return false; }
+
+        return true;
     }
 
     async findTernaryAtPosition(
@@ -32,9 +37,10 @@ export class ASTParser {
 
             traverse(ast, {
                 ConditionalExpression: path => {
-                    if (this.isNodeInPosition(path.node, position)) {
-                        foundNode = path.node;
-                        path.stop();
+                    if (this.isPositionWithinNode(path.node, position)) {
+                        if (!foundNode || this.isPositionWithinNode(foundNode, position)) {
+                            foundNode = path.node;
+                        }
                     }
                 }
             });
@@ -56,9 +62,10 @@ export class ASTParser {
 
             traverse(ast, {
                 IfStatement: path => {
-                    if (this.isNodeInPosition(path.node, position)) {
-                        foundNode = path.node;
-                        path.stop();
+                    if (this.isPositionWithinNode(path.node, position)) {
+                        if (!foundNode || this.isPositionWithinNode(foundNode, position)) {
+                            foundNode = path.node;
+                        }
                     }
                 }
             });
