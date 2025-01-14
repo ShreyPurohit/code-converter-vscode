@@ -1,37 +1,52 @@
 import * as vscode from 'vscode';
-import { TernaryHoverProvider } from './providers/TernaryHoverProvider';
 import { IfElseHoverProvider } from './providers/IfElseHoverProvider';
+import { TernaryHoverProvider } from './providers/TernaryHoverProvider';
+
+const SUPPORTED_LANGUAGES = ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'];
+const CONVERTER_STATE_KEY = 'ternaryConverterEnabled';
 
 export function activate(context: vscode.ExtensionContext) {
-  const supportedLanguages = ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'];
+  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+  statusBarItem.command = 'ternary-visualizer.toggleConverter';
 
-  const ternaryHoverProvider = new TernaryHoverProvider();
-  const ifElseHoverProvider = new IfElseHoverProvider();
+  const updateStatusBar = (isEnabled: boolean) => {
+    statusBarItem.text = isEnabled ? 'Disable Converter' : 'Enable Converter';
+  };
 
-  const copyIfElseCommand = vscode.commands.registerCommand('ternary-visualizer.copyIfElse', (code: string) => {
+  const refreshHover = async () => {
+    await vscode.workspace.getConfiguration().update('editor.hover.enabled', false, true);
+    await vscode.workspace.getConfiguration().update('editor.hover.enabled', true, true);
+  };
+
+  const copyToClipboard = (code: string) => {
     vscode.env.clipboard.writeText(code);
     vscode.window.showInformationMessage('Copied to Clipboard!');
-  });
+  };
 
-  const copyTernaryCommand = vscode.commands.registerCommand('ternary-visualizer.copyTernary', (code: string) => {
-    vscode.env.clipboard.writeText(code);
-    vscode.window.showInformationMessage('Copied to Clipboard!');
-  });
+  updateStatusBar(context.globalState.get(CONVERTER_STATE_KEY, false));
+  statusBarItem.show();
 
-  context.subscriptions.push(copyIfElseCommand, copyTernaryCommand);
+  const providers = [
+    new TernaryHoverProvider(context),
+    new IfElseHoverProvider(context)
+  ];
 
-  supportedLanguages.forEach(language => {
-    context.subscriptions.push(
-      vscode.languages.registerHoverProvider(
-        { scheme: 'file', language },
-        ternaryHoverProvider
-      ),
-      vscode.languages.registerHoverProvider(
-        { scheme: 'file', language },
-        ifElseHoverProvider
+  context.subscriptions.push(
+    statusBarItem,
+    vscode.commands.registerCommand('ternary-visualizer.toggleConverter', async () => {
+      const currentState = context.globalState.get(CONVERTER_STATE_KEY, false);
+      await context.globalState.update(CONVERTER_STATE_KEY, !currentState);
+      updateStatusBar(!currentState);
+      await refreshHover();
+    }),
+    vscode.commands.registerCommand('ternary-visualizer.copyIfElse', copyToClipboard),
+    vscode.commands.registerCommand('ternary-visualizer.copyTernary', copyToClipboard),
+    ...SUPPORTED_LANGUAGES.flatMap(language =>
+      providers.map(provider =>
+        vscode.languages.registerHoverProvider({ scheme: 'file', language }, provider)
       )
-    );
-  });
+    )
+  );
 }
 
 export function deactivate() { }
