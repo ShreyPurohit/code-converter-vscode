@@ -46,3 +46,8 @@ export class ASTCache {
         this.cache.clear();
     }
 }
+
+/*
+ * Copyright (c) 2025 Shrey Purohit.
+ * This code is licensed under the MIT License.
+ */

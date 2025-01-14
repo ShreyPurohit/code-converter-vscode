@@ -8,6 +8,8 @@ A powerful VS Code extension that enables bidirectional visualization and conver
 - 👁️ Real-time preview on hover without modifying your code
 - 📖 Improve code readability for better team collaboration
 - ⚡ Copy converted code with a single click
+- 🎛️ Enable/Disable converter with one click
+- 🔬 Granular level conversion support for nested conditions
 
 ## Table of Contents
 
@@ -18,6 +20,7 @@ A powerful VS Code extension that enables bidirectional visualization and conver
 - [How to Use](#how-to-use)
 - [Ternary to If-Else](#ternary-to-if-else-1)
 - [If-Else to Ternary](#if-else-to-ternary-1)
+- [Enable/Disable Converter](#enabledisable-converter)
 - [Supported Languages](#supported-languages)
 - [Debugging](#debugging)
 - [Common Issues](#common-issues)
@@ -37,6 +40,7 @@ A powerful VS Code extension that enables bidirectional visualization and conver
   - Reduces code length without losing functionality
   - Embraces modern JavaScript practices
   - Optimizes memory usage and final bundle size in production
+  - Supports granular conversion of nested conditions
 
 ### Ternary to If-Else
 
@@ -45,23 +49,39 @@ A powerful VS Code extension that enables bidirectional visualization and conver
   - Simplifies debugging and understanding of complex logic
   - Serves as a learning aid for new team members
   - Useful for teaching fundamental programming concepts
+  - Supports conversion at any nesting level
 
 ### Additional Features:
 - **Copy & Paste**: Easy to copy the converted code and modify it for your needs
 - **Instant Preview**: See conversions in real-time without affecting original code
 - **Bidirectional Conversion**: Freedom to switch between both formats as needed
+- **Toggle Converter**: Quick enable/disable functionality via status bar
+- **Granular Conversion**: Convert specific parts of nested conditions
+
+### Enable/Disable Converter:
+1. **Status Bar Button**: Click the converter status in the status bar to toggle
+2. **Quick Access**: Instantly enable/disable without going through settings
+3. **Visual Feedback**: Status bar shows current state (Enabled/Disabled)
+
+<img src="./assets/toggle_converter.webp" alt="Toggle Converter" style="height: 200px;">
 
 ### Ternary to If-Else:
 1. **Hover Over Ternary**: Simply hover your mouse over any ternary expression (`condition ? value1 : value2`).
 2. **View Conversion**: The extension will automatically show the corresponding `if-else` statement as a hover preview.
 
-<img src="./assets/ternaryView_sample.webp" alt="Hover Example" style="height: 200px;">
+<img src="./assets/ternaryView_sample.webp" alt="Hover Example" style="height: 200px; border: 5px solid black;">
 
 ### If-Else to Ternary:
 1. **Hover Over If-Else**: Hover over an if-else statement to see its ternary equivalent.
 2. **View Conversion**: The extension shows a preview of the ternary expression.
 
-<img src="./assets/if-else_sample.webp" alt="Hover Example" style="height: 200px;">
+<img src="./assets/if-else_sample.webp" alt="Hover Example" style="height: 200px; border: 5px solid black;">
+
+### Granular Level Conversion:
+The extension now supports converting specific parts of nested conditions:
+
+<img src="./assets/granular-level.webp" alt="Hover Example" style="height: 200px; border: 5px solid black;">
+
 
 ## Supported Languages:
 
