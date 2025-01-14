@@ -1,14 +1,25 @@
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
-import type { ConditionalExpression, IfStatement, Node } from '@babel/types';
+import type { ConditionalExpression, IfStatement, Node, File } from '@babel/types';
 import * as vscode from 'vscode';
+import { ASTCache } from './Cache';
 
 export class ASTParser {
-    private parseCode(code: string) {
-        return parse(code, {
+    private cache = new ASTCache();
+
+    private parseCode(code: string, document: vscode.TextDocument): File {
+        const cachedAST = this.cache.get(document.uri.toString(), document);
+        if (cachedAST) {
+            return cachedAST;
+        }
+
+        const ast = parse(code, {
             sourceType: 'module',
             plugins: ['typescript', 'jsx'],
         });
+
+        this.cache.set(document.uri.toString(), ast, document);
+        return ast;
     }
 
     private isPositionWithinNode(node: Node, position: vscode.Position): boolean {
@@ -29,14 +40,21 @@ export class ASTParser {
 
     async findTernaryAtPosition(
         code: string,
-        position: vscode.Position
+        position: vscode.Position,
+        document: vscode.TextDocument,
+        token?: vscode.CancellationToken
     ): Promise<ConditionalExpression | null> {
         try {
-            const ast = this.parseCode(code);
+            const ast = this.parseCode(code, document);
             let foundNode: ConditionalExpression | null = null;
 
             traverse(ast, {
                 ConditionalExpression: path => {
+                    if (token?.isCancellationRequested) {
+                        path.stop();
+                        return;
+                    }
+
                     if (this.isPositionWithinNode(path.node, position)) {
                         if (!foundNode || this.isPositionWithinNode(foundNode, position)) {
                             foundNode = path.node;
@@ -54,14 +72,21 @@ export class ASTParser {
 
     async findIfStatementAtPosition(
         code: string,
-        position: vscode.Position
+        position: vscode.Position,
+        document: vscode.TextDocument,
+        token?: vscode.CancellationToken
     ): Promise<IfStatement | null> {
         try {
-            const ast = this.parseCode(code);
+            const ast = this.parseCode(code, document);
             let foundNode: IfStatement | null = null;
 
             traverse(ast, {
                 IfStatement: path => {
+                    if (token?.isCancellationRequested) {
+                        path.stop();
+                        return;
+                    }
+
                     if (this.isPositionWithinNode(path.node, position)) {
                         if (!foundNode || this.isPositionWithinNode(foundNode, position)) {
                             foundNode = path.node;
@@ -77,8 +102,3 @@ export class ASTParser {
         }
     }
 }
-
-/*
- * Copyright (c) 2025 Shrey Purohit.
- * This code is licensed under the MIT License.
- */

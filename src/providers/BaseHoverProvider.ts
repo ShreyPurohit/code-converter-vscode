@@ -4,8 +4,9 @@ import { ASTParser } from '../utils/AstParser';
 export abstract class BaseHoverProvider implements vscode.HoverProvider {
     protected astParser: ASTParser;
     protected context: vscode.ExtensionContext;
-    protected readonly debounceTime = 250;
-    private timeoutId: NodeJS.Timeout | undefined;
+    protected readonly debounceTime = 150; // Reduced from 250ms to 150ms
+    private currentCancellationToken?: vscode.CancellationTokenSource;
+    private timeoutId?: NodeJS.Timeout;
 
     constructor(context: vscode.ExtensionContext) {
         this.astParser = new ASTParser();
@@ -14,7 +15,8 @@ export abstract class BaseHoverProvider implements vscode.HoverProvider {
 
     abstract provideHover(
         document: vscode.TextDocument,
-        position: vscode.Position
+        position: vscode.Position,
+        token: vscode.CancellationToken
     ): Promise<vscode.Hover | null>;
 
     protected isConverterEnabled(): boolean {
@@ -42,12 +44,33 @@ export abstract class BaseHoverProvider implements vscode.HoverProvider {
 
     protected debounce<T>(fn: (...args: any[]) => Promise<T>): (...args: any[]) => Promise<T> {
         return (...args: any[]) => {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
+                // Cancel previous operation
+                if (this.currentCancellationToken) {
+                    this.currentCancellationToken.cancel();
+                }
                 if (this.timeoutId) {
                     clearTimeout(this.timeoutId);
                 }
+
+                // Create new cancellation token
+                this.currentCancellationToken = new vscode.CancellationTokenSource();
+                const token = this.currentCancellationToken.token;
+
                 this.timeoutId = setTimeout(async () => {
-                    resolve(await fn(...args));
+                    if (token.isCancellationRequested) {
+                        reject(new Error('Operation cancelled'));
+                        return;
+                    }
+
+                    try {
+                        const result = await fn(...args);
+                        if (!token.isCancellationRequested) {
+                            resolve(result);
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
                 }, this.debounceTime);
             });
         };

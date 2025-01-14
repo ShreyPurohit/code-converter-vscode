@@ -3,31 +3,61 @@ import { BaseConverter } from './BaseConverter';
 
 export class TernaryToIfElseConverter extends BaseConverter {
     convert(node: ConditionalExpression): string {
-        return this.buildIfElse(node);
+        return this.convertTernary(node);
     }
 
-    private buildIfElse(node: ConditionalExpression, indentLevel = 0): string {
+    private convertTernary(node: ConditionalExpression, indentLevel = 0): string {
+        if (isConditionalExpression(node.alternate)) {
+            return this.handleElseIfChain(node, indentLevel);
+        }
+
+        return this.handleNestedTernary(node, indentLevel);
+    }
+
+    private handleElseIfChain(node: ConditionalExpression, indentLevel: number): string {
         const baseIndent = this.getIndentation(indentLevel);
-        const nestedIndent = this.getIndentation(indentLevel + 1);
+        const bodyIndent = this.getIndentation(indentLevel + 1);
+        let result = '';
 
-        const condition = this.generateCode(node.test);
-        const consequent = isConditionalExpression(node.consequent)
-            ? this.buildIfElse(node.consequent, indentLevel + 1)
-            : `${nestedIndent}${this.generateCode(node.consequent)}`;
+        let currentNode: ConditionalExpression = node;
+        let isFirst = true;
 
-        const alternate = isConditionalExpression(node.alternate)
-            ? this.buildIfElse(node.alternate, indentLevel + 1)
-            : `${nestedIndent}${this.generateCode(node.alternate)}`;
+        while (currentNode) {
+            const prefix = isFirst ? 'if' : '} else if';
+            result += `${baseIndent}${prefix} (${this.generateCode(currentNode.test)}) {\n`;
+            result += `${bodyIndent}${this.processExpression(currentNode.consequent, indentLevel + 1)}\n`;
 
-        return `${baseIndent}if (${condition}) {
-${consequent}
-${baseIndent}} else {
-${alternate}
-${baseIndent}}`;
+            if (!isConditionalExpression(currentNode.alternate)) {
+                result += `${baseIndent}} else {\n`;
+                result += `${bodyIndent}${this.generateCode(currentNode.alternate)}\n`;
+                result += `${baseIndent}}`;
+                break;
+            }
+
+            currentNode = currentNode.alternate;
+            isFirst = false;
+        }
+
+        return result;
+    }
+
+    private handleNestedTernary(node: ConditionalExpression, indentLevel: number): string {
+        const baseIndent = this.getIndentation(indentLevel);
+        const bodyIndent = this.getIndentation(indentLevel + 1);
+
+        let result = `${baseIndent}if (${this.generateCode(node.test)}) {\n`;
+        result += `${bodyIndent}${this.processExpression(node.consequent, indentLevel + 1)}\n`;
+        result += `${baseIndent}} else {\n`;
+        result += `${bodyIndent}${this.processExpression(node.alternate, indentLevel + 1)}\n`;
+        result += `${baseIndent}}`;
+
+        return result;
+    }
+
+    private processExpression(node: any, indentLevel: number): string {
+        if (isConditionalExpression(node)) {
+            return this.convertTernary(node, indentLevel);
+        }
+        return this.generateCode(node);
     }
 }
-
-/*
- * Copyright (c) 2025 Shrey Purohit.
- * This code is licensed under the MIT License.
- */
