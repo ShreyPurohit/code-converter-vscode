@@ -4,9 +4,11 @@ import { ASTParser } from '../utils/AstParser';
 export abstract class BaseHoverProvider implements vscode.HoverProvider {
     protected astParser: ASTParser;
     protected context: vscode.ExtensionContext;
-    protected readonly debounceTime = 150; // Reduced from 250ms to 150ms
-    private currentCancellationToken?: vscode.CancellationTokenSource;
-    private timeoutId?: NodeJS.Timeout;
+    protected readonly debounceTime = 100;
+    private debounceMap = new Map<string, {
+        timer: NodeJS.Timeout;
+        token: vscode.CancellationTokenSource;
+    }>();
 
     constructor(context: vscode.ExtensionContext) {
         this.astParser = new ASTParser();
@@ -45,33 +47,29 @@ export abstract class BaseHoverProvider implements vscode.HoverProvider {
     protected debounce<T>(fn: (...args: any[]) => Promise<T>): (...args: any[]) => Promise<T> {
         return (...args: any[]) => {
             return new Promise((resolve, reject) => {
-                // Cancel previous operation
-                if (this.currentCancellationToken) {
-                    this.currentCancellationToken.cancel();
+                const key = JSON.stringify(args);
+                const existing = this.debounceMap.get(key);
+
+                if (existing) {
+                    existing.token.cancel();
+                    clearTimeout(existing.timer);
                 }
-                if (this.timeoutId) {
-                    clearTimeout(this.timeoutId);
-                }
 
-                // Create new cancellation token
-                this.currentCancellationToken = new vscode.CancellationTokenSource();
-                const token = this.currentCancellationToken.token;
-
-                this.timeoutId = setTimeout(async () => {
-                    if (token.isCancellationRequested) {
-                        reject(new Error('Operation cancelled'));
-                        return;
-                    }
-
+                const token = new vscode.CancellationTokenSource();
+                const timer = setTimeout(async () => {
                     try {
-                        const result = await fn(...args);
-                        if (!token.isCancellationRequested) {
+                        if (!token.token.isCancellationRequested) {
+                            const result = await fn(...args);
                             resolve(result);
                         }
                     } catch (error) {
                         reject(error);
+                    } finally {
+                        this.debounceMap.delete(key);
                     }
                 }, this.debounceTime);
+
+                this.debounceMap.set(key, { timer, token });
             });
         };
     }
