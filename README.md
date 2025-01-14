@@ -55,13 +55,13 @@ A powerful VS Code extension that enables bidirectional visualization and conver
 1. **Hover Over Ternary**: Simply hover your mouse over any ternary expression (`condition ? value1 : value2`).
 2. **View Conversion**: The extension will automatically show the corresponding `if-else` statement as a hover preview.
 
-<img src="./assets/ternaryView_sample.png" alt="Hover Example" style="height: 200px;">
+<img src="./assets/ternaryView_sample.webp" alt="Hover Example" style="height: 200px;">
 
 ### If-Else to Ternary:
 1. **Hover Over If-Else**: Hover over an if-else statement to see its ternary equivalent.
 2. **View Conversion**: The extension shows a preview of the ternary expression.
 
-<img src="./assets/if-else_sample.png" alt="Hover Example" style="height: 200px;">
+<img src="./assets/if-else_sample.webp" alt="Hover Example" style="height: 200px;">
 
 ## Supported Languages:
 

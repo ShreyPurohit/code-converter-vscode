@@ -2,11 +2,11 @@
   "name": "code-converter",
   "displayName": "Ternary ⇄ If-Else Converter",
   "description": "Visualize and optimize conditional expressions with ease.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "icon": "/assets/icon.png",
   "publisher": "iamshreydxv",
   "engines": {
-    "vscode": "^1.95.0"
+    "vscode": "^1.54.0"
   },
   "categories": [
     "Formatters",
@@ -103,7 +103,7 @@
     "@types/babel__generator": "^7.6.8",
     "@types/babel__traverse": "^7.20.6",
     "@types/node": "20.x",
-    "@types/vscode": "^1.95.0",
+    "@types/vscode": "^1.54.0",
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.7.0",
     "esbuild": "^0.24.0",
