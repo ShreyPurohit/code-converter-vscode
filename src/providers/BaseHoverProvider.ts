@@ -4,6 +4,8 @@ import { ASTParser } from '../utils/AstParser';
 export abstract class BaseHoverProvider implements vscode.HoverProvider {
     protected astParser: ASTParser;
     protected context: vscode.ExtensionContext;
+    protected readonly debounceTime = 250;
+    private timeoutId: NodeJS.Timeout | undefined;
 
     constructor(context: vscode.ExtensionContext) {
         this.astParser = new ASTParser();
@@ -37,9 +39,17 @@ export abstract class BaseHoverProvider implements vscode.HoverProvider {
 
         return new vscode.Hover([codeBlock, actionButtons]);
     }
-}
 
-/*
- * Copyright (c) 2025 Shrey Purohit.
- * This code is licensed under the MIT License.
- */
+    protected debounce<T>(fn: (...args: any[]) => Promise<T>): (...args: any[]) => Promise<T> {
+        return (...args: any[]) => {
+            return new Promise((resolve) => {
+                if (this.timeoutId) {
+                    clearTimeout(this.timeoutId);
+                }
+                this.timeoutId = setTimeout(async () => {
+                    resolve(await fn(...args));
+                }, this.debounceTime);
+            });
+        };
+    }
+}

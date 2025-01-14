@@ -4,28 +4,25 @@ import { BaseHoverProvider } from './BaseHoverProvider';
 
 export class TernaryHoverProvider extends BaseHoverProvider {
     private converter: TernaryToIfElseConverter;
+    private debouncedProvideHover: (document: vscode.TextDocument, position: vscode.Position) => Promise<vscode.Hover | null>;
 
     constructor(context: vscode.ExtensionContext) {
         super(context);
         this.converter = new TernaryToIfElseConverter();
+        this.debouncedProvideHover = this.debounce(this.processHover.bind(this));
     }
 
     async provideHover(
         document: vscode.TextDocument,
         position: vscode.Position
     ): Promise<vscode.Hover | null> {
-        if (!this.isConverterEnabled()) {
-            const range = document.getWordRangeAtPosition(position);
-            if (!range) { return null; }
+        return this.debouncedProvideHover(document, position);
+    }
 
-            const ternaryNode = await this.astParser.findTernaryAtPosition(
-                document.getText(),
-                position
-            );
-
-            return ternaryNode ? this.createHoverContent('', '', '') : null;
-        }
-
+    private async processHover(
+        document: vscode.TextDocument,
+        position: vscode.Position
+    ): Promise<vscode.Hover | null> {
         const range = document.getWordRangeAtPosition(position);
         if (!range) { return null; }
 
@@ -35,6 +32,10 @@ export class TernaryHoverProvider extends BaseHoverProvider {
         );
 
         if (!ternaryNode) { return null; }
+
+        if (!this.isConverterEnabled()) {
+            return this.createHoverContent('', '', '');
+        }
 
         const ifElseRepresentation = this.converter.convert(ternaryNode);
         return this.createHoverContent(

@@ -6,7 +6,7 @@ export class IfElseToTernaryConverter extends BaseConverter {
     convert(node: IfStatement): string {
         if (!this.canConvertToTernary(node)) {
             return new vscode.MarkdownString(
-                `**Conversion to ternary is not optimal**\n` +
+                `Conversion to ternary is not optimal.\n` +
                 `It is recommended to keep it as an if-else statement.\n`
                 +
                 `Try optimizing at a more granular level.`
